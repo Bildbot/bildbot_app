@@ -1,0 +1,16 @@
+{
+  "root": true,
+  "env": { "es2022": true, "node": true, "browser": true },
+  "extends": [
+    "eslint:recommended",
+    "plugin:promise/recommended",
+    "plugin:n/recommended",
+    "prettier"
+  ],
+  "parserOptions": { "ecmaVersion": 2022, "sourceType": "module" },
+  "ignorePatterns": ["dist", "out"],
+  "rules": {
+    "n/no-missing-import": "off",
+    "n/no-unsupported-features/node-builtins": "off"
+  }
+}

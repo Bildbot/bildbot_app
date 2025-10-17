@@ -1,0 +1,10 @@
+# Cursor hard rules (short)
+- Stack: Electron (Chromium) + React + Vite + TypeScript + pnpm workspaces.
+- Security: contextIsolation=true, sandbox=true, nodeIntegration=false. IPC must be zod-validated. No eval/remote.
+- Modules: browser (tabs, containers, blocker, proxy), photo (CanvasKit tools, sharp/libvips, ffmpeg), shared (ipc, config).
+- Privacy: telemetry opt-in only, PII scrub (no file paths, usernames, GPS). Crash reports allowed only when telemetry is on.
+- Networking allowlist (app): BildBot API, Update server, Crash endpoint.
+- Releases: portable zip only (v1), private update endpoint, code signing enabled when secrets provided.
+- Photo export: JPEG max quality, keep EXIF/IPTC, min width 620px. Storyboard: 5 frames around pause.
+- Tests: unit (EXIF, crop/rotate math, IPC), e2e (10 tabs, batch refresh, download, crop→export, login/logout).
+- Do not add new heavy native deps without ADR and size/surface analysis.

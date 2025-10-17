@@ -1,21 +1,38 @@
 {
-  "name": "bildbot_app",
-  "private": "true",
-  "version": "1.0.0",
-  "description": "Учебный проект: десктоп-оболочка с встроенным браузером.\r Как запускать: TBD",
-  "main": "index.js",
+  "name": "bildbot-desktop",
+  "private": true,
+  "version": "0.0.1",
+  "description": "BildBot Desktop monorepo",
+  "packageManager": "pnpm@9.12.0",
+  "workspaces": [
+    "apps/*",
+    "modules/*",
+    "docs/*"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "pnpm --parallel --filter ./apps/* run dev",
+    "build": "pnpm build:modules && pnpm --parallel --filter ./apps/* run build",
+    "build:modules": "pnpm --filter @bildbot/shared run build",
+    "typecheck": "tsc -b",
+    "lint": "eslint .",
+    "format": "prettier -w .",
+    "e2e": "playwright test -c tests/e2e",
+    "prepare": "husky install"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Bildbot/bildbot_app.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/Bildbot/bildbot_app/issues"
-  },
-  "homepage": "https://github.com/Bildbot/bildbot_app#readme"
+  "devDependencies": {
+    "@eslint/js": "^9.13.0",
+    "@types/node": "^22.7.5",
+    "@typescript-eslint/eslint-plugin": "^8.15.0",
+    "@typescript-eslint/parser": "^8.15.0",
+    "eslint": "^9.13.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-n": "^17.10.3",
+    "eslint-plugin-promise": "^7.1.0",
+    "husky": "^9.1.6",
+    "lint-staged": "^15.2.10",
+    "prettier": "^3.3.3",
+    "typescript": "^5.6.3",
+    "zod": "^3.23.8"
+  }
 }
