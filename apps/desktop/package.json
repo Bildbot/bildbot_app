@@ -2,12 +2,11 @@
   "name": "desktop",
   "version": "0.0.1",
   "private": true,
-  "type": "module",
-  "main": "dist/main.cjs",
+  "main": "dist/main.js",
   "scripts": {
-    "dev": "electron src/main.cjs",
+    "dev": "electron dist/main.js",
     "build": "tsup src/main.ts --format cjs --out-dir dist && tsup src/preload.ts --format cjs --out-dir dist",
-    "start": "electron dist/main.cjs"
+    "start": "electron dist/main.js"
   },
   "dependencies": {
     "electron": "^32.2.5",
