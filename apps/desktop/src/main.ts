@@ -1,4 +1,5 @@
-import { app, BrowserWindow, ipcMain, session, type OnHeadersReceivedListener } from 'electron';
+import { app, BrowserWindow, ipcMain, session } from 'electron';
+import type { HeadersReceivedResponse, OnHeadersReceivedListenerDetails } from 'electron/main';
 import { join } from 'node:path';
 import { PingSchema, IPC_CHANNELS, type PingResponse } from '@bildbot/shared';
 
@@ -8,7 +9,10 @@ const rendererDevServerUrl = process.env.BB_RENDERER_URL ?? 'http://localhost:51
 const isDev = !app.isPackaged;
 
 const applyContentSecurityPolicy = (): void => {
-  const listener: OnHeadersReceivedListener = (details, callback) => {
+  const listener = (
+    details: OnHeadersReceivedListenerDetails,
+    callback: (headersReceivedResponse: HeadersReceivedResponse) => void,
+  ): void => {
     const csp =
       "default-src 'self'; img-src 'self' data: blob:; media-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'";
     const responseHeaders = {
