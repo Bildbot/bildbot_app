@@ -1,5 +1,12 @@
-const { contextBridge, ipcRenderer } = require('electron');
+import { contextBridge, ipcRenderer } from 'electron';
+import { IPC_CHANNELS, type PingResponse } from '@bildbot/shared';
 
-contextBridge.exposeInMainWorld('bb', {
-  ping: (message: string) => ipcRenderer.invoke('ipc:ping', { message }),
-});
+type BridgeApi = {
+  ping: (message: string) => Promise<PingResponse>;
+};
+
+const api: BridgeApi = {
+  ping: (message) => ipcRenderer.invoke(IPC_CHANNELS.PING, { message }),
+};
+
+contextBridge.exposeInMainWorld('bb', api);

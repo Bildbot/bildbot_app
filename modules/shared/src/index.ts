@@ -1,1 +1,1 @@
-export * from './ipc/types.js';
+export * from './ipc/types';

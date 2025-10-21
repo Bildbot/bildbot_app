@@ -1,49 +1,77 @@
-const { app, BrowserWindow, ipcMain, session } = require('electron');
-const path = require('node:path');
-const { PingSchema, IPC_CHANNELS } = require('@bildbot/shared');
+import { app, BrowserWindow, ipcMain, session, type OnHeadersReceivedListener } from 'electron';
+import { join } from 'node:path';
+import { PingSchema, IPC_CHANNELS, type PingResponse } from '@bildbot/shared';
 
 process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'true';
 
+const rendererDevServerUrl = process.env.BB_RENDERER_URL ?? 'http://localhost:5173';
 const isDev = !app.isPackaged;
 
-async function createWindow() {
-  const win = new BrowserWindow({
+const applyContentSecurityPolicy = (): void => {
+  const listener: OnHeadersReceivedListener = (details, callback) => {
+    const csp =
+      "default-src 'self'; img-src 'self' data: blob:; media-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'";
+    const responseHeaders = {
+      ...details.responseHeaders,
+      'Content-Security-Policy': [csp],
+    };
+    callback({ responseHeaders });
+  };
+
+  session.defaultSession.webRequest.onHeadersReceived(listener);
+};
+
+const createWindow = async (): Promise<BrowserWindow> => {
+  const window = new BrowserWindow({
     width: 1280,
     height: 800,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: join(__dirname, 'preload.js'),
       contextIsolation: true,
       sandbox: true,
       nodeIntegration: false,
       webviewTag: false,
     },
+    show: false,
   });
 
-  // Security: basic CSP via headers
-  session.defaultSession.webRequest.onHeadersReceived((details: any, callback: any) => {
-    const csp =
-      "default-src 'self'; img-src 'self' data: blob:; media-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'";
-    const headers = details.responseHeaders || {};
-    headers['Content-Security-Policy'] = [csp];
-    callback({ responseHeaders: headers });
+  window.once('ready-to-show', () => {
+    window.show();
   });
 
-  const url = isDev
-    ? 'http://localhost:5173'
-    : new URL(`file://${path.join(__dirname, '../renderer/index.html')}`).toString();
-  await win.loadURL(url);
-}
+  if (isDev) {
+    await window.loadURL(rendererDevServerUrl);
+  } else {
+    await window.loadFile(join(__dirname, 'renderer', 'index.html'));
+  }
 
-// Minimal typed IPC example
-ipcMain.handle(IPC_CHANNELS.PING, (_e: any, payload: any) => {
-  const p = PingSchema.parse(payload);
-  return { ok: true, echo: p.message } as const;
+  return window;
+};
+
+ipcMain.handle(IPC_CHANNELS.PING, async (_event, payload): Promise<PingResponse> => {
+  const parsed = PingSchema.parse(payload);
+  return { ok: true, echo: parsed.message } satisfies PingResponse;
 });
 
-app.whenReady().then(createWindow);
+app
+  .whenReady()
+  .then(() => {
+    applyContentSecurityPolicy();
+    return createWindow();
+  })
+  .catch((error) => {
+    const reason = error instanceof Error ? (error.stack ?? error.message) : String(error);
+    process.stderr.write(`Не удалось создать главное окно: ${reason}\n`);
+  });
+
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit();
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
 });
+
 app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) createWindow();
+  if (BrowserWindow.getAllWindows().length === 0) {
+    void createWindow();
+  }
 });
