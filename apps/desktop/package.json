@@ -4,8 +4,10 @@
   "private": true,
   "main": "dist/main.js",
   "scripts": {
-    "dev": "electron dist/main.js",
-    "build": "tsup src/main.ts --format cjs --out-dir dist && tsup src/preload.ts --format cjs --out-dir dist",
+    "compile": "tsup src/main.ts src/preload.ts --format cjs --out-dir dist --target node18 --clean --external electron",
+    "copy:renderer": "tsx scripts/copy-renderer.ts",
+    "dev": "tsx scripts/run-dev.ts",
+    "build": "pnpm run compile && pnpm run copy:renderer",
     "start": "electron dist/main.js"
   },
   "dependencies": {
